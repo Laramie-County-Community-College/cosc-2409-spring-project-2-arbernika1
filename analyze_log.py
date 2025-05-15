@@ -1,36 +1,33 @@
 import re
 import os
 
-
-def analyze_log_file(filename="access.log"):
+def process_log_file(filename="access.log"):
     try:
         with open(filename, "r") as file:
-            log_lines = file.readlines()
+            log_entries = file.readlines()
     except FileNotFoundError:
-        print(f"Error: Log file '{filename}' not found.")
+        print(f"Error: The file '{filename}' was not found.")
         return
 
-    url_counts = {}
-    unique_ips = set()
-    error_count = 0
+    url_frequencies = {}
+    ip_addresses = set()
+    error_total = 0
 
-    for line in log_lines:
-        _, ip, url, status = extract_log_data(line)
+    for entry in log_entries:
+        _, ip, url, status = extract_log_data(entry)
         if ip and url and status:
-            unique_ips.add(ip)
-            url_counts[url] = url_counts.get(url, 0) + 1
-            error_count += int(status) >= 400
+            ip_addresses.add(ip)
+            url_frequencies[url] = url_frequencies.get(url, 0) + 1
+            if int(status) >= 400:
+                error_total += 1
 
-    print(f"Total Errors (4xx and 5xx): {error_count}")
-    print(f"Unique IP Addresses: {len(unique_ips)}")
-    print("URL Access Counts:")
-    [print(f"    {url}: {count}") for url, count in url_counts.items()]
-
+    print(f"Number of Error Responses (4xx/5xx): {error_total}")
+    print(f"Count of Unique IPs: {len(ip_addresses)}")
+    print("Frequency of URL Requests:")
+    [print(f"    {url}: {count}") for url, count in url_frequencies.items()]
 
 def extract_log_data(line):
-    #please note that you do not need to edit this function, just the analyze_log_file function above!
-    #example usage: timestamp, ip, url, status_code = extract_log_data(line)
-    
+    # No changes needed here — this function works as intended.
     match = re.search(r"(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) - (\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}) - \"GET (.+) HTTP/1.1\" (\d+)", line)
     if match:
         timestamp, ip, url, status_code = match.groups()
@@ -38,9 +35,5 @@ def extract_log_data(line):
     else:
         return None, None, None, None
 
-
-# Generate a sample log file (uncomment to create the file)
-# generate_log_file()
-
-# Analyze the log file
-analyze_log_file()
+# Run the log analyzer
+process_log_file()
